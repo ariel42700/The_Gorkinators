@@ -1,4 +1,6 @@
 # The_Gorkinators
+
+## Project Contributors: Dylan Jacobs, Jun Pu, and Ariel Lutati
 633 Presentation
 
 Research Question Idea: Are wealthier countries more digitized?
