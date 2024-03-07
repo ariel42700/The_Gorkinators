@@ -10,6 +10,7 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Jun's plot
 # Import packages
 ```{r message=FALSE, warning=FALSE}
 library(gapminder)
