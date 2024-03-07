@@ -28,54 +28,71 @@ library(shiny)
 
 ```{r}
 #selected_columns <- c("Country name", "Year", "Adult population", "Region", "Income group", "Saved at a financial institution (% age 15+)")
-df <- read_excel("DatabankWide.xlsx")
-# View(df)
+df_findex <- read_excel("DatabankWide.xlsx")
+df_gdp <- read.csv("df_gdpPC.csv")
 ```
 
 # Select the variabels of interest
 ```{r}
-df_var <- df[c("Country name", "Year", "Region", "Adult populaiton", "Income group", "Made or received a digital payment (% age 15+)", "Financial institution account (% age 15+)")]
+df_findex_var <- df_findex[c("Country name", "Year", "Region", "Adult populaiton", "Income group", "Made or received a digital payment (% age 15+)", "Financial institution account (% age 15+)")]
+
+df_gdp_var <- df_gdp[c("country", "year", "gdpPercap", "lifeExp")]
 ```
+
 
 # Rename variables to make it look nicer
 ```{r}
 # Create a new dataframe df_rename
-df_rename <- df_var
+df_findex_new <- df_findex_var
 
 # Rename "Made or received a digital payment (% age 15+)" to "payment_digital"
-colnames(df_rename)[colnames(df_rename) == "Made or received a digital payment (% age 15+)"] <- "payment_digital"
+colnames(df_findex_new)[colnames(df_findex_new) == "Made or received a digital payment (% age 15+)"] <- "payment_digital"
 
 # Rename "Financial institution account (% age 15+)" to "account_fin"
-colnames(df_rename)[colnames(df_rename) == "Financial institution account (% age 15+)"] <- "account_fin"
+colnames(df_findex_new)[colnames(df_findex_new) == "Financial institution account (% age 15+)"] <- "account_fin"
 
 # Rename "Country name" to "country"
-colnames(df_rename)[colnames(df_rename) == "Country name"] <- "country"
+colnames(df_findex_new)[colnames(df_findex_new) == "Country name"] <- "country"
 
 # Rename "Adult populaiton" to "population"
-colnames(df_rename)[colnames(df_rename) == "Adult populaiton"] <- "population"
+colnames(df_findex_new)[colnames(df_findex_new) == "Adult populaiton"] <- "population"
 
 # Rename "Income group" to "group_income"
-colnames(df_rename)[colnames(df_rename) == "Income group"] <- "group_income"
+colnames(df_findex_new)[colnames(df_findex_new) == "Income group"] <- "group_income"
 
 # Rename "Year" to "year"
-colnames(df_rename)[colnames(df_rename) == "Year"] <- "year"
+colnames(df_findex_new)[colnames(df_findex_new) == "Year"] <- "year"
 
 # Rename "Region" to "region"
-colnames(df_rename)[colnames(df_rename) == "Region"] <- "region"
+colnames(df_findex_new)[colnames(df_findex_new) == "Region"] <- "region"
 
 # Remove N/A values
-df_rename <- na.omit(df_rename)
+df_findex_new <- na.omit(df_findex_new)
 
-```
 
-```{r}
 # Check variable type
-str(df_rename)
+# str(df_rename)
 ```
+
+# Keep observations from years 2014, 2017, and 2021
+```{r}
+# Assuming 'year' is the column containing the year information
+df_gdp_var_limit <- subset(df_gdp_var, year %in% c(2014, 2017, 2021))
+df_findex_limit <- subset(df_findex_new, year %in% c(2014, 2017, 2021))
+```
+
+
+
+# Merge the two datasets
+```{r}
+# by 'country' and 'year'
+merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"))
+```
+
 
 # Create an interactive scatter plot
 ```{r}
-plot <- df_rename %>%
+plot_dig_account <- merged_data %>%
   plot_ly(x = ~account_fin, y = ~payment_digital, 
           color = ~group_income, text = ~paste(country, "<br>", year),
           mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
@@ -93,20 +110,21 @@ plot
 # Create an interactive scatter plot with a slider for 'year'
 # Define the UI
 ui <- fluidPage(
-  sliderInput("year_slider", "Select Year", min = min(df_rename$year), max = max(df_rename$year), value = min(df_rename$year), step = 1),
+  sliderInput("year_slider", "Select Year", min = min(merged_data$year), max = max(merged_data$year), value = min(merged_data$year), step = 1),
   plotlyOutput("scatter_plot")
 )
 
 # Define the server
 server <- function(input, output) {
   filtered_data <- reactive({
-    df_rename[df_rename$year == input$year_slider, ]
+    merged_data[merged_data$year == input$year_slider, ]
   })
 
   output$scatter_plot <- renderPlotly({
     plot_ly(data = filtered_data(),
             x = ~account_fin, y = ~payment_digital,
             color = ~group_income, text = ~paste(country, "<br>", year),
+            size = ~gdpPercap, sizes = c(5,20),
             mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
       layout(title = "Financial Account vs. Savings at Financial Institution",
              xaxis = list(title = "Percentage with an account at a Financial Institution"),
