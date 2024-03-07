@@ -89,7 +89,7 @@ plot
 
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Create an interactive scatter plot with a slider for 'year'
 # Define the UI
 ui <- fluidPage(
