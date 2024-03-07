@@ -90,10 +90,13 @@ merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"
 ```
 
 
-# Create an interactive scatter plot
+# Create a basic scatter plot
+
+The following scatterplot shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
 ```{r}
 plot_dig_account <- merged_data %>%
-  plot_ly(x = ~account_fin, y = ~payment_digital, 
+  plot_ly(x = ~account_fin, y = ~payment_digital,
+          size = ~gdpPercap, sizes = c(5, 30), 
           color = ~group_income, text = ~paste(country, "<br>", year),
           mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
   layout(title = "Financial Account vs. Savings at Financial Institution",
@@ -102,9 +105,10 @@ plot_dig_account <- merged_data %>%
          showlegend = TRUE)
 
 # Show the plot
-plot
+plot_dig_account
 
 ```
+
 
 ```{r message=FALSE, warning=FALSE}
 # Create an interactive scatter plot with a slider for 'year'
