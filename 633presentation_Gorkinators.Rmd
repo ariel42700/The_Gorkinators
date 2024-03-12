@@ -89,7 +89,6 @@ df_findex_limit <- subset(df_findex_new, year %in% c(2014, 2017, 2021))
 merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"))
 ```
 
-
 # Create a basic scatter plot
 
 The following scatterplot shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
@@ -138,6 +137,40 @@ server <- function(input, output) {
 
 # Run the Shiny app
 shinyApp(ui, server)
+
+```
+
+
+# Dylan's Graph
+```{r}
+findex <- read_excel('DatabankWide.xlsx')
+
+findex2 <- findex %>%
+  group_by(`Income group`) %>%
+  mutate(avg_mobile_money = 100 * mean(`Mobile money account (% age 15+)`, na.rm = TRUE),
+         avg_internet_access = 100 * mean(`Has access to the internet (% age 15+)`, na.rm = TRUE),
+         avg_digital_payments = 100 * mean(`Received digital payments (% age 15+)`, na.rm = TRUE),
+         avg_credit_card = 100 * mean(`Owns a credit card, older (% age 25+)`, na.rm = TRUE))
+
+# Let's split up the countries by income group and examine various stats
+
+findex3 <- findex2 %>%
+  select(`Income group`, avg_mobile_money, avg_internet_access, avg_digital_payments, avg_credit_card)
+
+findex4 <- findex3[c(1, 5, 9, 23),]
+
+
+findex4 %>%
+  plot_ly(x = ~`Income group`, y = ~avg_mobile_money, type = "bar", name = "Money Market Account") %>%
+  add_trace(y = ~avg_internet_access, name = 'Internet Access') %>%
+  add_trace(y = ~avg_digital_payments, name = 'Digital Payments') %>%
+  add_trace(y = ~avg_credit_card, name = "Credit Card Ownership") %>%
+  layout(yaxis = list(title = 'Percent'), barmode = 'group', xaxis = list(title = 'Income', categoryorder = "array",
+                                                                  categoryarray = c("Low income", 
+                                                                                    "Lower middle income", 
+                                                                                    "Upper middle income",
+                                                                                    "High income"))
+  )
 
 ```
 
