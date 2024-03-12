@@ -1,0 +1,213 @@
+---
+title: "Are wealthier countries more digitized?"
+author: "Dylan Jacobs, Jun Pu, and Ariel Lutati"
+date: "2024-03-07"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What question are we addressing?
+- Are wealthier countries more digitalized? What is the relationship between status of economic development and financial digitalization?
+
+# Why is it worth asking?
+A digitalized financial system and electronic payments have the potential to contribute significantly to building a more resilient financial ecosystem in developing countries. This, in turn, can play a pivotal role in fostering economic development.
+
+1. Increases account ownership through an enabling environment
+
+2. Increases use of financial servieces: digital payments, borrowing & savings.
+
+3. Building a more resilient financial ecosystem and improving financial well-being
+
+# Import packages
+```{r message=FALSE, warning=FALSE}
+library(gapminder)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(readxl)
+library(leaflet)
+library(sf)
+library(RColorBrewer)
+library(shiny)
+```
+
+# Data Cleaning
+```{r message=FALSE, warning=FALSE}
+# Import the two datasets: DatabankWide and df_gdpPC
+df_findex <- read_excel("DatabankWide.xlsx")
+df_gdp <- read.csv("df_gdpPC.csv")
+
+# Select the variables of interest
+df_findex_var <- df_findex[c("Country name", "Year", "Region", "Adult populaiton", "Income group", "Made or received a digital payment (% age 15+)", "Financial institution account (% age 15+)")]
+df_gdp_var <- df_gdp[c("country", "year", "gdpPercap", "lifeExp")]
+
+# Renmae variables
+# Create a new dataframe df_rename
+df_findex_new <- df_findex_var
+
+# Rename "Made or received a digital payment (% age 15+)" to "payment_digital"
+colnames(df_findex_new)[colnames(df_findex_new) == "Made or received a digital payment (% age 15+)"] <- "payment_digital"
+
+# Rename "Financial institution account (% age 15+)" to "account_fin"
+colnames(df_findex_new)[colnames(df_findex_new) == "Financial institution account (% age 15+)"] <- "account_fin"
+
+# Rename "Country name" to "country"
+colnames(df_findex_new)[colnames(df_findex_new) == "Country name"] <- "country"
+
+# Rename "Adult populaiton" to "population"
+colnames(df_findex_new)[colnames(df_findex_new) == "Adult populaiton"] <- "population"
+
+# Rename "Income group" to "group_income"
+colnames(df_findex_new)[colnames(df_findex_new) == "Income group"] <- "group_income"
+
+# Rename "Year" to "year"
+colnames(df_findex_new)[colnames(df_findex_new) == "Year"] <- "year"
+
+# Rename "Region" to "region"
+colnames(df_findex_new)[colnames(df_findex_new) == "Region"] <- "region"
+
+# Remove N/A values
+df_findex_new <- na.omit(df_findex_new)
+
+# Keep observations from years 2014, 2017, and 2021
+df_gdp_var_limit <- subset(df_gdp_var, year %in% c(2014, 2017, 2021))
+df_findex_limit <- subset(df_findex_new, year %in% c(2014, 2017, 2021))
+
+# Merge the two datasets by 'country' and 'year'
+merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"))
+```
+
+
+# Visualization 1
+The following shinyapp shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
+
+```{r}
+# Define the UI
+ui <- fluidPage(
+  radioButtons("year_buttons", "Select Year", choices = c(2014, 2017, 2021), selected = 2014),
+  plotlyOutput("scatter_plot")
+)
+
+# Define the server
+# Define the server
+server <- function(input, output) {
+  filtered_data <- reactive({
+    merged_data[merged_data$year == input$year_buttons, ]
+  })
+
+  output$scatter_plot <- renderPlotly({
+    plot_ly(data = filtered_data(),
+            x = ~account_fin, y = ~payment_digital,
+            color = ~group_income, text = ~paste(country, "<br>", year),
+            size = ~gdpPercap, sizes = c(5, 20),
+            type = "scatter",
+            mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
+      layout(title = "Financial Account vs. Savings at Financial Institution",
+             xaxis = list(title = "Percentage with an account at a Financial Institution"),
+             yaxis = list(title = "Percentage made or received a digital payment"),
+             showlegend = TRUE)
+  })
+}
+
+
+# Run the Shiny app
+shinyApp(ui, server)
+```
+
+
+# Visualization 2 Dylan's Graph
+```{r}
+findex <- read_excel('DatabankWide.xlsx')
+
+findex2 <- findex %>%
+  group_by(`Income group`) %>%
+  mutate(avg_mobile_money = 100 * mean(`Mobile money account (% age 15+)`, na.rm = TRUE),
+         avg_internet_access = 100 * mean(`Has access to the internet (% age 15+)`, na.rm = TRUE),
+         avg_digital_payments = 100 * mean(`Received digital payments (% age 15+)`, na.rm = TRUE),
+         avg_credit_card = 100 * mean(`Owns a credit card, older (% age 25+)`, na.rm = TRUE))
+
+# Let's split up the countries by income group and examine various stats
+
+findex3 <- findex2 %>%
+  select(`Income group`, avg_mobile_money, avg_internet_access, avg_digital_payments, avg_credit_card)
+
+findex4 <- findex3[c(1, 5, 9, 23),]
+
+
+findex4 %>%
+  plot_ly(x = ~`Income group`, y = ~avg_mobile_money, type = "bar", name = "Money Market Account") %>%
+  add_trace(y = ~avg_internet_access, name = 'Internet Access') %>%
+  add_trace(y = ~avg_digital_payments, name = 'Digital Payments') %>%
+  add_trace(y = ~avg_credit_card, name = "Credit Card Ownership") %>%
+  layout(yaxis = list(title = 'Percent'), barmode = 'group', xaxis = list(title = 'Income', categoryorder = "array",
+                                                                  categoryarray = c("Low income", 
+                                                                                    "Lower middle income", 
+                                                                                    "Upper middle income",
+                                                                                    "High income"))
+  )
+
+```
+
+# Visualization 3 Ariel's Graph
+```{r}
+# Add a new column with corresponding regions
+library(countrycode)
+merged_data$better_region <- countrycode(merged_data$country, origin = "country.name", destination = "region")
+```
+
+```{r}
+new_plot <- plot_ly(merged_data, x = ~better_region, y = ~payment_digital, color = ~country, type = 'bar') %>%
+  layout(
+    title = "Comparison of Regions by Income Group and Digital Payment",
+    xaxis = list(title = "Region"),
+    yaxis = list(title = "Value"),
+    barmode = 'group'
+  )
+
+new_plot
+```
+```{r}
+top_digi_ctrs <- merged_data %>% arrange(better_region, desc(payment_digital)) %>%
+  group_by(year, better_region) %>%
+  slice_head(n = 5)
+
+top_digi_ctrs %>% plot_ly(x = ~better_region, y = ~payment_digital, color = ~country) %>%
+  add_histogram(hoverinfo = "x+y") %>%
+  group_by(year, better_region) %>%
+  summarise(n = n()) %>%
+  layout(
+    barmode = 'stack',
+    title = "Top 5 Most Digital Countries in Each Region",
+  xaxis = list(title = "Country"),
+  yaxis = list(title = "Payment Digital"),
+  sliders = list(
+    list(
+      active = 0,
+      steps = lapply(unique(top_digi_ctrs$year), function(year) {
+        list(
+          label = year,
+          method = "update",
+          args = list(list(visible = top_digi_ctrs$year == year),
+                      list(title = paste("Top 5 Most Digital Countries in Each Region - ", year)))
+        )
+      })
+    )
+  )
+  )
+  
+#better_plot
+```
+```{r}
+ui <- fluidPage(
+  sliderInput("year_slider", "Select Year", min = min(merged_data$year), max = max(merged_data$year), value = min(merged_data$year), step = 1),
+  plotlyOutput("scatter_plot")
+)
+
+```
+
+
+
