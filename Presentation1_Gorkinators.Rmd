@@ -22,8 +22,9 @@ A digitalized financial system and electronic payments have the potential to con
 
 3. Building a more resilient financial ecosystem and improving financial well-being
 
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
 # Import packages
-```{r message=FALSE, warning=FALSE}
 library(gapminder)
 library(ggplot2)
 library(plotly)
@@ -35,8 +36,9 @@ library(RColorBrewer)
 library(shiny)
 ```
 
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
 # Data Cleaning
-```{r message=FALSE, warning=FALSE}
 # Import the two datasets: DatabankWide and df_gdpPC
 df_findex <- read_excel("DatabankWide.xlsx")
 df_gdp <- read.csv("df_gdpPC.csv")
@@ -81,11 +83,10 @@ df_findex_limit <- subset(df_findex_new, year %in% c(2014, 2017, 2021))
 merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"))
 ```
 
-
 # Visualization 1
 The following shinyapp shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Define the UI
 ui <- fluidPage(
   radioButtons("year_buttons", "Select Year", choices = c(2014, 2017, 2021), selected = 2014),
@@ -120,7 +121,7 @@ shinyApp(ui, server)
 
 
 # Visualization 2 Dylan's Graph
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 findex <- read_excel('DatabankWide.xlsx')
 
 findex2 <- findex %>%
