@@ -110,25 +110,24 @@ plot_dig_account
 ```
 
 
-```{r message=FALSE, warning=FALSE}
-# Create an interactive scatter plot with a slider for 'year'
+```{r}
 # Define the UI
 ui <- fluidPage(
-  sliderInput("year_slider", "Select Year", min = min(merged_data$year), max = max(merged_data$year), value = min(merged_data$year), step = 1),
+  radioButtons("year_buttons", "Select Year", choices = c(2014, 2017, 2021), selected = 2014),
   plotlyOutput("scatter_plot")
 )
 
 # Define the server
 server <- function(input, output) {
   filtered_data <- reactive({
-    merged_data[merged_data$year == input$year_slider, ]
+    merged_data[merged_data$year == input$year_buttons, ]
   })
 
   output$scatter_plot <- renderPlotly({
     plot_ly(data = filtered_data(),
             x = ~account_fin, y = ~payment_digital,
             color = ~group_income, text = ~paste(country, "<br>", year),
-            size = ~gdpPercap, sizes = c(5,20),
+            size = ~gdpPercap, sizes = c(5, 20),
             mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
       layout(title = "Financial Account vs. Savings at Financial Institution",
              xaxis = list(title = "Percentage with an account at a Financial Institution"),
