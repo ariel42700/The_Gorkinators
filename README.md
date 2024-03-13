@@ -1,4 +1,4 @@
-# The_Gorkinators
+# Group 1: The_Gorkinators
 
 ## Project Contributors: Dylan Jacobs, [Jun Pu](https://github.com/Bettyjpu), and [Ariel Lutati](https://github.com/ariel42700)
 633 Presentation
