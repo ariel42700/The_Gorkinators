@@ -85,8 +85,8 @@ server <- function(input, output) {
             type = "heatmap", colors = "Blues",
             hoverinfo = "x+y+z") %>%
       layout(title = paste("Mean Digital Payments by Region and Income Group -", input$year),
-             xaxis = list(title = "Region"),
-             yaxis = list(title = "Income Group"),
+             xaxis = list(title = "Income Group"),
+             yaxis = list(title = "Region"),
              plot_bgcolor = "darkgrey")
   })
 }

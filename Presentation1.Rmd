@@ -1,0 +1,188 @@
+---
+title: "Are wealthier countries more digitized?"
+author: "Dylan Jacobs, Jun Pu, and Ariel Lutati"
+date: "2024-03-13"
+output: ioslides_presentation
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Import packages
+library(gapminder)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(readxl)
+library(leaflet)
+library(sf)
+library(RColorBrewer)
+library(shiny)
+```
+
+
+## What question are we addressing?
+
+- Are wealthier countries more digitalized? 
+
+- What is the relationship between status of economic development and financial digitalization?
+
+## Why is it worth asking?
+
+A digitalized financial system and electronic payments have the potential to contribute significantly to building a more resilient financial ecosystem in developing countries. This, in turn, can play a pivotal role in fostering economic development.
+
+1. Increases account ownership through an enabling environment
+
+2. Increases use of financial servieces: digital payments, borrowing & savings.
+
+3. Building a more resilient financial ecosystem and improving financial well-being
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Import the two datasets: DatabankWide and df_gdpPC
+df_findex <- read_excel("DatabankWide.xlsx")
+df_gdp <- read.csv("df_gdpPC.csv")
+
+# Select the variables of interest
+df_findex_var <- df_findex[c("Country name", "Year", "Region", "Adult populaiton", "Income group", "Made or received a digital payment (% age 15+)", "Financial institution account (% age 15+)")]
+df_gdp_var <- df_gdp[c("country", "year", "gdpPercap", "lifeExp")]
+
+# Renmae variables
+# Create a new dataframe df_rename
+df_findex_new <- df_findex_var
+
+# Rename "Made or received a digital payment (% age 15+)" to "payment_digital"
+colnames(df_findex_new)[colnames(df_findex_new) == "Made or received a digital payment (% age 15+)"] <- "payment_digital"
+
+# Rename "Financial institution account (% age 15+)" to "account_fin"
+colnames(df_findex_new)[colnames(df_findex_new) == "Financial institution account (% age 15+)"] <- "account_fin"
+
+# Rename "Country name" to "country"
+colnames(df_findex_new)[colnames(df_findex_new) == "Country name"] <- "country"
+
+# Rename "Adult populaiton" to "population"
+colnames(df_findex_new)[colnames(df_findex_new) == "Adult populaiton"] <- "population"
+
+# Rename "Income group" to "group_income"
+colnames(df_findex_new)[colnames(df_findex_new) == "Income group"] <- "group_income"
+
+# Rename "Year" to "year"
+colnames(df_findex_new)[colnames(df_findex_new) == "Year"] <- "year"
+
+# Rename "Region" to "region"
+colnames(df_findex_new)[colnames(df_findex_new) == "Region"] <- "region"
+
+# Remove N/A values
+df_findex_new <- na.omit(df_findex_new)
+
+# Keep observations from years 2014, 2017, and 2021
+df_gdp_var_limit <- subset(df_gdp_var, year %in% c(2014, 2017, 2021))
+df_findex_limit <- subset(df_findex_new, year %in% c(2014, 2017, 2021))
+
+# Merge the two datasets by 'country' and 'year'
+merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"))
+```
+
+## Which datasets are we using?
+
+In this visualization project, we leverage two key datasets. 
+
+- Our primary dataset is [The Global Findex Database 2021](https://www.worldbank.org/en/publication/globalfindex), offering comprehensive country-level data on various financial indicators such as account ownership, payments, savings, credit, and more. Notably, the database reports indicators for the years 2021, 2017, 2014, and 2011. 
+- The second dataset we imported is GDP per Capita for the year 2017 downloaded from the [World Bank](https://data.worldbank.org/indicator/NY.GDP.PCAP.CD).
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+df_findex <- read_excel("DatabankWide.xlsx")
+df_gdp <- read.csv("df_gdpPC.csv")
+```
+
+We merged the two datasets by "year" and "country".
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+# Merge the two datasets by 'country' and 'year'
+merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"))
+```
+
+## What are our variables of interest?
+**Made or received a digital payment (% age 15+)**
+
+- The percentage of respondents who report using mobile money, a debit or credit card, or a mobile phone to make a payment from an account using the internet.
+
+**Financial institution account (% age 15+)**
+
+- The percentage of respondents above 15 years old who report having an account at a bank, credit union, or microfinance institution.
+
+**Mobile money account (% age 15+) **
+
+- The percentage of respondents who report personally using a mobile money service to make payments, buy things, or to send or receive money in the past year.
+
+## What are our variables of interest?
+**Has access to the internet (% age 15+)**
+
+- The percentage of respondents who report having access to the internet in a country.
+
+**Received digital payments (% age 15+) **
+
+- The percentage of respondents who report using a mobile money account, a debit or credit card, or a mobile phone to receive a payment into an account in the past year.
+
+**Owns a credit card, older (% age 25+)**
+
+- The percentage of respondents who reports owning a credit card in the past year.
+
+## What are our variables of interest?
+**Income Group**
+
+- Income group is a categorical variable that classifies countries into high income, upper-middle income, lower-middle income, and low income.
+
+**Region**
+
+- Region is the continent the country is located in.
+
+**Economy**
+
+- Economy is the name of the specific country.
+
+
+## Visualization 1 - Correlation between Digital Transactions and Ownership of Financial Account
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+shiny::shinyAppFile("Visualization1_shinyapp.R")
+```
+
+## Visualization 2 - Comparison of Summary Statistics: Financial and Digital Access Across Income Groups
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+findex2 <- df_findex %>%
+  group_by(`Income group`) %>%
+  mutate(avg_mobile_money = 100 * mean(`Mobile money account (% age 15+)`, na.rm = TRUE),
+         avg_internet_access = 100 * mean(`Has access to the internet (% age 15+)`, na.rm = TRUE),
+         avg_digital_payments = 100 * mean(`Received digital payments (% age 15+)`, na.rm = TRUE),
+         avg_credit_card = 100 * mean(`Owns a credit card, older (% age 25+)`, na.rm = TRUE))
+
+# Let's split up the countries by income group and examine various stats
+
+findex3 <- findex2 %>%
+  select(`Income group`, avg_mobile_money, avg_internet_access, avg_digital_payments, avg_credit_card)
+
+findex4 <- findex3[c(1, 5, 9, 23),]
+
+
+findex4 %>%
+  plot_ly(x = ~`Income group`, y = ~avg_mobile_money, type = "bar", name = "Money Market Account") %>%
+  add_trace(y = ~avg_internet_access, name = 'Internet Access') %>%
+  add_trace(y = ~avg_digital_payments, name = 'Digital Payments') %>%
+  add_trace(y = ~avg_credit_card, name = "Credit Card Ownership") %>%
+  layout(yaxis = list(title = 'Percent'), barmode = 'group', xaxis = list(title = 'Income', categoryorder = "array",
+                                                                  categoryarray = c("Low income", 
+                                                                                    "Lower middle income", 
+                                                                                    "Upper middle income",
+                                                                                    "High income"))
+  )
+```
+
+
+## Visualization 3 - Average Percentage of Digital Payments Across Regions and Income Groups
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+shiny::shinyAppFile("Visualization3_shinyapp.R")
+```
+
+
