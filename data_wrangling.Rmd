@@ -10,18 +10,6 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# What question are we addressing?
-- Are wealthier countries more digitalized? What is the relationship between status of economic development and financial digitalization?
-
-# Why is it worth asking?
-A digitalized financial system and electronic payments have the potential to contribute significantly to building a more resilient financial ecosystem in developing countries. This, in turn, can play a pivotal role in fostering economic development.
-
-1. Increases account ownership through an enabling environment
-
-2. Increases use of financial servieces: digital payments, borrowing & savings.
-
-3. Building a more resilient financial ecosystem and improving financial well-being
-
 # Import packages
 ```{r message=FALSE, warning=FALSE}
 library(gapminder)
