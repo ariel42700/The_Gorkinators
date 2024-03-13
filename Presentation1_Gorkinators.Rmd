@@ -208,6 +208,11 @@ findex4 %>%
 
 # Visualization 3:
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Add a new column with corresponding regions
+library(countrycode)
+merged_data$better_region <- countrycode(merged_data$country, origin = "country.name", destination = "region")
+
 # Calculate the mean digital payment for each combination of region and income group
 heatmap_data <- merged_data %>%
   group_by(better_region, group_income) %>%
@@ -239,7 +244,7 @@ server <- function(input, output) {
   
   # Render the heatmap
   output$heatmap <- renderPlotly({
-    plot_ly(filtered_data(), x = ~better_region, y = ~group_income, z = ~mean_payment_digital, 
+    plot_ly(filtered_data(), x =~group_income, y = ~better_region, z = ~mean_payment_digital, 
             type = "heatmap", colors = "Blues",
             hoverinfo = "x+y+z") %>%
       layout(title = paste("Mean Digital Payments by Region and Income Group -", input$year),
