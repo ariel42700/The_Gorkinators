@@ -98,41 +98,39 @@ merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"
 ```
 
 ## What are our variables of interest?
-### Made or received a digital payment (% age 15+)
+#### Made or received a digital payment (% age 15+)
 The percentage of respondents who report using mobile money, a debit or credit card, or a mobile phone to make a payment from an account—or report using the internet to pay bills or to buy something online or in a store—in the past year.
 
-### Financial institution account (% age 15+)
+#### Financial institution account (% age 15+)
 The percentage of respondents above 15 years old who report having an account (by themselves or together with someone else) at a bank, credit union, microfinance institution, or post office that falls under prudential regulation by a government body.
 
-### Mobile money account (% age 15+)
+#### Mobile money account (% age 15+)
 The percentage of respondents who report personally using a mobile money service to make payments, buy things, or to send or receive money in the past year.
 
-### Has access to the internet (% age 15+)
+#### Has access to the internet (% age 15+)
 The percentage of respondents who report having access to the internet in a country.
 
-### Received digital payments (% age 15+)
+#### Received digital payments (% age 15+)
 The percentage of respondents who report using a mobile money account, a debit or credit card, or a mobile phone to receive a payment into an account in the past year.
 
-### Owns a credit card, older (% age 25+)
+#### Owns a credit card, older (% age 25+)
 The percentage of respondents who reports owning a credit card in the past year.
 
-### Income Group
+#### Income Group
 Income group is a categorical variable that classifies countries into high income, upper-middle income, lower-middle income, and low income.
 
-### Region
+#### Region
 Region is the continent the country is located in.
 
-### Economy
+#### Economy
 Economy is the name of the specific country.
 
 ### What are potential weaknesses of the data?
 1) Limited years of observation: We're only looking at 2014, 2017, and 2021
 2) Country-level data: aggregated data might mask significant variability within each country.
 
-# Visualization 1: %Digital Payments vs %Financial Account
+# Visualization 1 - Correlation between Digital Transactions and Wwnership of Financial Account
 The following shinyapp shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
-
-## Shiny App Visualization
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Define the UI
@@ -175,7 +173,7 @@ shinyApp(ui, server)
 ```
 
 
-# Visualization 2:
+# Visualization 2 - Comparison of Summary Statistics: Financial and Digital Access Across Income Groups
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 findex2 <- df_findex %>%
   group_by(`Income group`) %>%
@@ -206,7 +204,7 @@ findex4 %>%
 ```
 
 
-# Visualization 3:
+# Visualization 3 - Average Percentage of Digital Payments Across Regions and Income Groups
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 # Add a new column with corresponding regions
