@@ -207,56 +207,62 @@ library(countrycode)
 merged_data$better_region <- countrycode(merged_data$country, origin = "country.name", destination = "region")
 ```
 
-```{r}
-new_plot <- plot_ly(merged_data, x = ~better_region, y = ~payment_digital, color = ~country, type = 'bar') %>%
-  layout(
-    title = "Comparison of Regions by Income Group and Digital Payment",
-    xaxis = list(title = "Region"),
-    yaxis = list(title = "Value"),
-    barmode = 'group'
-  )
 
-new_plot
-```
 ```{r}
-top_digi_ctrs <- merged_data %>% arrange(better_region, desc(payment_digital)) %>%
+top_digi_ctrs <- merged_data %>%
+  arrange(better_region, desc(payment_digital)) %>%
   group_by(year, better_region) %>%
   slice_head(n = 5)
 
-top_digi_ctrs %>% plot_ly(x = ~better_region, y = ~payment_digital, color = ~country) %>%
-  add_histogram(hoverinfo = "x+y") %>%
-  group_by(year, better_region) %>%
-  summarise(n = n()) %>%
+top_digi_ctrs %>%
+  plot_ly(x = ~better_region, y = ~payment_digital, color = ~country, type = "bar") %>%
   layout(
-    barmode = 'stack',
     title = "Top 5 Most Digital Countries in Each Region",
-  xaxis = list(title = "Country"),
-  yaxis = list(title = "Payment Digital"),
-  sliders = list(
-    list(
-      active = 0,
-      steps = lapply(unique(top_digi_ctrs$year), function(year) {
-        list(
-          label = year,
-          method = "update",
-          args = list(list(visible = top_digi_ctrs$year == year),
-                      list(title = paste("Top 5 Most Digital Countries in Each Region - ", year)))
-        )
-      })
+    xaxis = list(title = "Region"),
+    yaxis = list(title = "Payment Digital"),
+    barmode = 'stack',
+    updatemenus = list(
+      list(
+        active = 0,
+        buttons = lapply(unique(top_digi_ctrs$year), function(year) {
+          list(
+            label = year,
+            method = "update",
+            args = list(list(visible = top_digi_ctrs$year == year),
+                        list(title = paste("Top 5 Most Digital Countries in Each Region - ", year)))
+          )
+        })
+      )
     )
   )
-  )
-  
-#better_plot
-```
-```{r}
+
 ui <- fluidPage(
-  sliderInput("year_slider", "Select Year", min = min(merged_data$year), max = max(merged_data$year), value = min(merged_data$year), step = 1),
-  plotlyOutput("scatter_plot")
+  sliderInput("year_slider", "Select Year", min = min(top_digi_ctrs$year), max = max(top_digi_ctrs$year), value = min(top_digi_ctrs$year), step = 1),
+  plotlyOutput("bar_plot")
 )
-
 ```
 
+
+# Working graph
+```{r}
+# Filter data for the year 2014
+top_digi_ctrs <- merged_data %>%
+  filter(year == 2014) %>%
+  arrange(better_region, desc(payment_digital)) %>%
+  group_by(better_region) %>%
+  slice_head(n = 5)
+
+# Create Plotly plot
+plot_top_digi <- plot_ly(top_digi_ctrs, x = ~better_region, y = ~payment_digital, color = ~country, type = "bar") %>%
+  layout(
+    title = "Top 5 Most Digital Countries in Each Region - 2014",
+    xaxis = list(title = "Region"),
+    yaxis = list(title = "Payment Digital"),
+    barmode = 'stack'
+  )
+
+plot_top_digi
+```
 
 
 
