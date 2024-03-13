@@ -24,7 +24,6 @@ library(shiny)
 ```
 
 
-
 # What question are we addressing?
 - Are wealthier countries more digitalized? What is the relationship between status of economic development and financial digitalization?
 
@@ -130,41 +129,15 @@ Economy is the name of the specific country.
 1) Limited years of observation: We're only looking at 2014, 2017, and 2021
 2) Country-level data: aggregated data might mask significant variability within each country.
 
-# Visualization 1
+# Visualization 1: %Digital Payments vs %Financial Account
 The following shinyapp shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
 
-## Visualization only for 2021
-
-```{r message=FALSE, warning=FALSE}
-# Filter data for the year 2021 initially
-filtered_data <- merged_data %>%
-  filter(year == 2021)
-
-# Create Plotly plot
-scatter_plot <- plot_ly(data = filtered_data,
-                        x = ~account_fin, y = ~payment_digital,
-                        color = ~group_income, text = ~paste(country, "<br>", year),
-                        size = ~gdpPercap, sizes = c(5, 20),
-                        type = "scatter",
-                        mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
-  layout(title = "Financial Account vs. Savings at Financial Institution",
-         xaxis = list(title = "Percentage with an account at a Financial Institution"),
-         yaxis = list(title = "Percentage made or received a digital payment"),
-         showlegend = TRUE)
-
-# Display the plot
-scatter_plot
-```
-
-
-
-
-## Shiny App Visualization for all 3 years
+## Shiny App Visualization
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Define the UI
 ui <- fluidPage(
-  titlePanel("Financial Account vs. Savings at Financial Institution"),
+  titlePanel("Digital Payments vs. Account at Financial Institution"),
   sidebarLayout(
     sidebarPanel(
       radioButtons("year_buttons", "Select Year", choices = c(2014, 2017, 2021), selected = 2014)
@@ -189,7 +162,7 @@ server <- function(input, output) {
             type = "scatter",
             mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
       layout(
-        title = paste("Financial Account vs. Savings at Financial Institution -", input$year_buttons),
+        title = paste("Digital Payments vs. Account at Financial Institution -", input$year_buttons),
         xaxis = list(title = "Percentage with an account at a Financial Institution"),
         yaxis = list(title = "Percentage made or received a digital payment"),
         showlegend = TRUE
