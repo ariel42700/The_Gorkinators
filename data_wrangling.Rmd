@@ -136,3 +136,98 @@ server <- function(input, output) {
 shinyApp(ui, server)
 ```
 
+<<<<<<< HEAD:data_wrangling.Rmd
+=======
+
+
+```{r}
+# Add a new column with corresponding regions
+library(countrycode)
+merged_data$better_region <- countrycode(merged_data$country, origin = "country.name", destination = "region")
+```
+
+```{r}
+new_plot <- plot_ly(merged_data, x = ~better_region, y = ~payment_digital, color = ~country, type = 'bar') %>%
+  layout(
+    title = "Comparison of Regions by Income Group and Digital Payment",
+    xaxis = list(title = "Region"),
+    yaxis = list(title = "Value"),
+    barmode = 'group'
+  )
+
+new_plot
+```
+```{r}
+top_digi_ctrs <- merged_data %>% arrange(better_region, desc(payment_digital)) %>%
+  group_by(year, better_region) %>%
+  slice_head(n = 5)
+
+# Create an interactive stacked bar plot
+better_plot <- plot_ly(top_digi_ctrs, x = ~better_region, y = ~payment_digital, color = ~country, type = 'bar') %>%
+  layout(
+    barmode = 'stack',
+    title = "Top 5 Most Digital Countries in Each Region",
+    xaxis = list(title = "Region"),
+    yaxis = list(title = "Payment Digital"),
+    sliders = list(
+      list(
+        active = 0,
+        steps = lapply(unique(top_digi_ctrs$year), function(year) {
+          list(
+            label = year,
+            method = "update",
+            args = list(list(visible = top_digi_ctrs$year == year),
+                        list(title = paste("Top 5 Most Digital Countries in Each Region - ", year)))
+          )
+        })
+      )
+    )
+  )
+
+# Display the plot
+better_plot
+```
+```{r}
+# Define UI
+ui <- fluidPage(
+  titlePanel("Top 5 Most Digital Countries in Each Region"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("year", "Select Year:",
+                  choices = c(2014, 2017, 2021),
+                  selected = 2014)
+    ),
+    mainPanel(
+      plotlyOutput("plot")
+    )
+  )
+)
+
+# Define server logic
+server <- function(input, output) {
+  
+  # Assuming top_digi_ctrs is already defined
+  
+  # Filter data based on selected year
+  filtered_data <- reactive({
+    top_digi_ctrs %>%
+      filter(year == input$year)
+  })
+  
+  # Create plot
+  output$plot <- renderPlotly({
+    plot_ly(filtered_data(), x = ~better_region, y = ~payment_digital, color = ~country, type = 'bar') %>%
+      layout(
+        barmode = 'stack',
+        title = "Top 5 Most Digital Countries in Each Region",
+        xaxis = list(title = "Region"),
+        yaxis = list(title = "Payment Digital")
+      )
+  })
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+```
+
+>>>>>>> ariel_branch:633presentation_Gorkinators.Rmd
