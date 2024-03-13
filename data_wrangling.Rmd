@@ -1,5 +1,5 @@
 ---
-title: "Presentation Visualizations"
+title: "Are wealthier countries more digitized?"
 author: "Dylan Jacobs, Jun Pu, and Ariel Lutati"
 date: "2024-03-07"
 output: html_document
@@ -10,7 +10,6 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Jun's plot
 # Import packages
 ```{r message=FALSE, warning=FALSE}
 library(gapminder)
@@ -25,23 +24,16 @@ library(shiny)
 ```
 
 # Data Cleaning
-
-```{r}
-#selected_columns <- c("Country name", "Year", "Adult population", "Region", "Income group", "Saved at a financial institution (% age 15+)")
+```{r message=FALSE, warning=FALSE}
+# Import the two datasets: DatabankWide and df_gdpPC
 df_findex <- read_excel("DatabankWide.xlsx")
 df_gdp <- read.csv("df_gdpPC.csv")
-```
 
-# Select the variabels of interest
-```{r}
+# Select the variables of interest
 df_findex_var <- df_findex[c("Country name", "Year", "Region", "Adult populaiton", "Income group", "Made or received a digital payment (% age 15+)", "Financial institution account (% age 15+)")]
-
 df_gdp_var <- df_gdp[c("country", "year", "gdpPercap", "lifeExp")]
-```
 
-
-# Rename variables to make it look nicer
-```{r}
+# Renmae variables
 # Create a new dataframe df_rename
 df_findex_new <- df_findex_var
 
@@ -69,79 +61,83 @@ colnames(df_findex_new)[colnames(df_findex_new) == "Region"] <- "region"
 # Remove N/A values
 df_findex_new <- na.omit(df_findex_new)
 
-
-# Check variable type
-# str(df_rename)
-```
-
 # Keep observations from years 2014, 2017, and 2021
-```{r}
-# Assuming 'year' is the column containing the year information
 df_gdp_var_limit <- subset(df_gdp_var, year %in% c(2014, 2017, 2021))
 df_findex_limit <- subset(df_findex_new, year %in% c(2014, 2017, 2021))
-```
 
-
-
-# Merge the two datasets
-```{r}
-# by 'country' and 'year'
+# Merge the two datasets by 'country' and 'year'
 merged_data <- merge(df_findex_limit, df_gdp_var_limit, by = c("year", "country"))
 ```
 
 
-# Create a basic scatter plot
+# Visualization 1
+The following shinyapp shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
 
-The following scatterplot shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
+
+
 ```{r}
-plot_dig_account <- merged_data %>%
-  plot_ly(x = ~account_fin, y = ~payment_digital,
-          size = ~gdpPercap, sizes = c(5, 30), 
-          color = ~group_income, text = ~paste(country, "<br>", year),
-          mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
+# Filter data for the year 2021 initially
+filtered_data <- merged_data %>%
+  filter(year == 2021)
+
+# Create Plotly plot
+scatter_plot <- plot_ly(data = filtered_data,
+                        x = ~account_fin, y = ~payment_digital,
+                        color = ~group_income, text = ~paste(country, "<br>", year),
+                        size = ~gdpPercap, sizes = c(5, 20),
+                        type = "scatter",
+                        mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
   layout(title = "Financial Account vs. Savings at Financial Institution",
          xaxis = list(title = "Percentage with an account at a Financial Institution"),
          yaxis = list(title = "Percentage made or received a digital payment"),
          showlegend = TRUE)
 
-# Show the plot
-plot_dig_account
-
+# Display the plot
+scatter_plot
 ```
 
-
-```{r message=FALSE, warning=FALSE}
-# Create an interactive scatter plot with a slider for 'year'
+```{r}
 # Define the UI
 ui <- fluidPage(
-  sliderInput("year_slider", "Select Year", min = min(merged_data$year), max = max(merged_data$year), value = min(merged_data$year), step = 1),
-  plotlyOutput("scatter_plot")
+  titlePanel("Financial Account vs. Savings at Financial Institution"),
+  sidebarLayout(
+    sidebarPanel(
+      radioButtons("year_buttons", "Select Year", choices = c(2014, 2017, 2021), selected = 2014)
+    ),
+    mainPanel(
+      plotlyOutput("scatter_plot")
+    )
+  )
 )
 
 # Define the server
 server <- function(input, output) {
   filtered_data <- reactive({
-    merged_data[merged_data$year == input$year_slider, ]
+    merged_data[merged_data$year == input$year_buttons, ]
   })
 
   output$scatter_plot <- renderPlotly({
     plot_ly(data = filtered_data(),
             x = ~account_fin, y = ~payment_digital,
             color = ~group_income, text = ~paste(country, "<br>", year),
-            size = ~gdpPercap, sizes = c(5,20),
+            size = ~gdpPercap, sizes = c(5, 20),
+            type = "scatter",
             mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
-      layout(title = "Financial Account vs. Savings at Financial Institution",
-             xaxis = list(title = "Percentage with an account at a Financial Institution"),
-             yaxis = list(title = "Percentage made or received a digital payment"),
-             showlegend = TRUE)
+      layout(
+        title = paste("Financial Account vs. Savings at Financial Institution -", input$year_buttons),
+        xaxis = list(title = "Percentage with an account at a Financial Institution"),
+        yaxis = list(title = "Percentage made or received a digital payment"),
+        showlegend = TRUE
+      )
   })
 }
 
 # Run the Shiny app
 shinyApp(ui, server)
-
 ```
 
+<<<<<<< HEAD:data_wrangling.Rmd
+=======
 
 
 ```{r}
@@ -234,3 +230,4 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 ```
 
+>>>>>>> ariel_branch:633presentation_Gorkinators.Rmd
