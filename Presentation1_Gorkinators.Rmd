@@ -133,43 +133,7 @@ Economy is the name of the specific country.
 The following shinyapp shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# Define the UI
-ui <- fluidPage(
-  titlePanel("Digital Payments vs. Account at Financial Institution"),
-  sidebarLayout(
-    sidebarPanel(
-      radioButtons("year_buttons", "Select Year", choices = c(2014, 2017, 2021), selected = 2014)
-    ),
-    mainPanel(
-      plotlyOutput("scatter_plot")
-    )
-  )
-)
-
-# Define the server
-server <- function(input, output) {
-  filtered_data <- reactive({
-    merged_data[merged_data$year == input$year_buttons, ]
-  })
-
-  output$scatter_plot <- renderPlotly({
-    plot_ly(data = filtered_data(),
-            x = ~account_fin, y = ~payment_digital,
-            color = ~group_income, text = ~paste(country, "<br>", year),
-            size = ~gdpPercap, sizes = c(5, 20),
-            type = "scatter",
-            mode = "markers", marker = list(sizemode = "diameter", opacity = 0.6)) %>%
-      layout(
-        title = paste("Digital Payments vs. Account at Financial Institution -", input$year_buttons),
-        xaxis = list(title = "Percentage with an account at a Financial Institution"),
-        yaxis = list(title = "Percentage made or received a digital payment"),
-        showlegend = TRUE
-      )
-  })
-}
-
-# Run the Shiny app
-shinyApp(ui, server)
+shiny::shinyAppFile("Visualization1_shinyapp.R")
 ```
 
 
@@ -206,54 +170,7 @@ findex4 %>%
 
 # Visualization 3 - Average Percentage of Digital Payments Across Regions and Income Groups
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-# Add a new column with corresponding regions
-library(countrycode)
-merged_data$better_region <- countrycode(merged_data$country, origin = "country.name", destination = "region")
-
-# Calculate the mean digital payment for each combination of region and income group
-heatmap_data <- merged_data %>%
-  group_by(better_region, group_income) %>%
-  summarize(mean_payment_digital = mean(payment_digital, na.rm = TRUE), .groups = "drop")
-
-# Define UI
-ui <- fluidPage(
-  titlePanel("Mean Digital Payments by Region and Income Group"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("year", "Select Year", choices = c(2014, 2017, 2021), selected = 2014)
-    ),
-    mainPanel(
-      plotlyOutput("heatmap")
-    )
-  )
-)
-
-# Define server logic
-server <- function(input, output) {
-  # Reactive expression to filter data based on selected year
-  filtered_data <- reactive({
-    merged_data_year <- merged_data[merged_data$year == input$year, ]
-    heatmap_data <- merged_data_year %>%
-      group_by(better_region, group_income) %>%
-      summarize(mean_payment_digital = mean(payment_digital, na.rm = TRUE), .groups = "drop")
-    return(heatmap_data)
-  })
-  
-  # Render the heatmap
-  output$heatmap <- renderPlotly({
-    plot_ly(filtered_data(), x =~group_income, y = ~better_region, z = ~mean_payment_digital, 
-            type = "heatmap", colors = "Blues",
-            hoverinfo = "x+y+z") %>%
-      layout(title = paste("Mean Digital Payments by Region and Income Group -", input$year),
-             xaxis = list(title = "Region"),
-             yaxis = list(title = "Income Group"),
-             plot_bgcolor = "darkgrey")
-  })
-}
-
-# Run the application
-shinyApp(ui = ui, server = server)
+shiny::shinyAppFile("Visualization3_shinyapp.R")
 ```
 
 
