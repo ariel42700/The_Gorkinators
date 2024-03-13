@@ -129,7 +129,7 @@ Economy is the name of the specific country.
 1) Limited years of observation: We're only looking at 2014, 2017, and 2021
 2) Country-level data: aggregated data might mask significant variability within each country.
 
-# Visualization 1 - Correlation between Digital Transactions and Wwnership of Financial Account
+# Visualization 1 - Correlation between Digital Transactions and Ownership of Financial Account
 The following shinyapp shows the relationship between percentage of population that has made/received a digital payment and percentage of population with an account at a financial institution. From the graph, we can observe that high income countries have a larger percentage with a financial account and a large percentage of involvement in digital payments.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
